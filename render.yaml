@@ -1,0 +1,12 @@
+services:
+  - type: cron
+    name: eth-prime-bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    schedule: "30 13 * * *"  # 13:30 UTC = 19:00 IST daily
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: CHAT_ID
+        sync: false
