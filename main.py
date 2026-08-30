@@ -13,34 +13,36 @@ def get_json(url, headers=None, timeout=12):
     except Exception as e:
         print(f"Fail {url[:40]} {e}")
         return None
-
 def get_sweep():
-    # OKX candles - most reliable for levels
     try:
-        data = get_json("https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1H&limit=72")
-        klines = list(reversed(data['data']))
-        yesterday = klines[-48:-24]
-        today = klines[-24:]
-        y_high = max(float(k[2]) for k in yesterday)
-        y_low = min(float(k[3]) for k in yesterday)
-        t_high = max(float(k[2]) for k in today)
-        t_low = min(float(k[3]) for k in today)
-        current = float(klines[-1][4])
-        daily_open = float(today[0][1])
-        return {"y_high":y_high,"y_low":y_low,"t_high":t_high,"t_low":t_low,"current":current,"open":daily_open,"src":"OKX"}
-    except:
-        # fallback cryptocompare
+        # FIXED: Use 1D candles to match TradingView daily
+        data = get_json("https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1D&limit=5")
+        klines = list(reversed(data['data'])) # oldest first
+        # klines[-1] = Today forming candle
+        # klines[-2] = Yesterday closed candle = PDL
+        # klines[-3] = Day before yesterday
+        y = klines[-2]
+        t = klines[-1]
+        y_high = float(y[2]); y_low = float(y[3])
+        t_high = float(t[2]); t_low = float(t[3])
+        current = float(t[4])
+        daily_open = float(t[1])
+
+        # For today high/low precise, also get hourly to update intraday
         try:
-            d = get_json("https://min-api.cryptocompare.com/data/v2/histohour?fsym=ETH&tsym=USD&limit=72")['Data']['Data']
-            yesterday = d[-48:-24]; today = d[-24:]
-            y_high = max(float(k['high']) for k in yesterday)
-            y_low = min(float(k['low']) for k in yesterday)
-            t_high = max(float(k['high']) for k in today)
-            t_low = min(float(k['low']) for k in today)
-            current = float(d[-1]['close']); daily_open = float(today[0]['open'])
-            return {"y_high":y_high,"y_low":y_low,"t_high":t_high,"t_low":t_low,"current":current,"open":daily_open,"src":"CC"}
+            h_data = get_json("https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1H&limit=24")
+            h = list(reversed(h_data['data']))
+            today_hourly = h[-24:]
+            t_high = max(t_high, max(float(k[2]) for k in today_hourly))
+            t_low = min(t_low, min(float(k[3]) for k in today_hourly))
+            current = float(h[-1][4])
         except:
-            return None
+            pass
+
+        return {"y_high":y_high,"y_low":y_low,"t_high":t_high,"t_low":t_low,"current":current,"open":daily_open,"src":"OKX-1D"}
+    except Exception as e:
+        print(f"Sweep fail {e}")
+        return None
 
 def get_etf_flow():
     # Use coingecko etf? Fallback to farside scraping via coinglass public api
