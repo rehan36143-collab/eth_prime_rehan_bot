@@ -6,7 +6,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 BINANCE = "https://fapi.binance.com"
-SYMBOL = SYMBOL = "ETHUSDT"
+SYMBOL = "ETHUSDT"
 PORT = int(os.getenv("PORT", 10000))
 
 def tg_send(chat_id, text):
