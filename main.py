@@ -8,8 +8,8 @@ ETH ADAPTIVE BOT v3.5 - FULLY ADAPTIVE LONG/SHORT + REAL DATA + RENDER
 import requests, time, datetime, os, threading
 from flask import Flask
 
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "YOUR_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "YOUR_CHAT_ID")
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN") or os.environ.get("BOT_TOKEN") or os.environ.get("TELEGRAM_BOT_") or "YOUR_BOT_TOKEN"
+TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID") or os.environ.get("CHAT_ID") or "YOUR_CHAT_ID"
 OKX_BASE = "https://www.okx.com/api/v5/market/candles"
 BINANCE_FUNDING = "https://fapi.binance.com/fapi/v1/premiumIndex?symbol=ETHUSDT"
 BINANCE_BTC_KLINE = "https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1h&limit=2"
